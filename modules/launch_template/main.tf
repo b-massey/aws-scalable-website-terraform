@@ -57,13 +57,6 @@ resource "aws_iam_instance_profile" "web_instance_profile" {
 resource "aws_launch_template" "web_launch_template" {
   name = "${format("launch-template-%s",var.name)}"
 
-  block_device_mappings {
-    device_name = "/dev/xvda"
-
-    ebs {
-      volume_size = 10
-    }
-  }
 
   iam_instance_profile = { name = "${aws_iam_instance_profile.web_instance_profile.name}" }
   image_id                  = "${var.ami}"

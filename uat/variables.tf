@@ -38,7 +38,7 @@ variable "instance_type" {
 }
 variable "key_pair" {
 	description = "Key Pair"
-  	default = "bindu.massey.sandbox"
+  	default = "bindu-massey-sandbox"
 }
 
 # Site Files

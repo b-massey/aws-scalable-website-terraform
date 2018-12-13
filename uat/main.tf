@@ -7,12 +7,16 @@ data "aws_ami" "linux" {
   most_recent = true  
   filter {
     name   = "description"
-    values = ["* Linux *"]
+    values = ["*Amazon Linux *"]
   }
   filter {
     name   = "architecture"
     values = ["x86_64"]
   }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }  
   filter {
     name   = "virtualization-type"
     values = ["hvm"]
@@ -50,6 +54,27 @@ module "sg_site" {
   alb_sec_group_id  = "${module.sg_alb.security_group_id}"
   source_cidr_block = "0.0.0.0/0"
   tags              = "${merge(map("Env",var.env_name),var.web_tags)}"
+}
+
+module "sg_bastion" {
+  source              = "../modules/sg_bastion"
+  sg_name             = "sg_bastion"
+  vpc_id              = "${module.vpc.vpc_id}"
+  source_cidr_block   = "0.0.0.0/0"
+  restricted_access   = "84.233.151.245/32"
+  tags                = "${merge(map("Env",var.env_name),var.web_tags)}"
+}
+
+module "bastion_server" {
+  source                      = "../modules/bastion_server"
+  ami                         = "${data.aws_ami.linux.id}"
+  instance_type               = "t2.small"
+  key_name                    = "${var.key_pair}"
+  security_groups             = "${module.sg_bastion.security_group_id}"
+  subnet_id                   = "${module.vpc.public_subnets}"
+  associate_public_ip_address = "true"
+  source_dest_check           = "false"
+  tags                        = "${merge(map("Env",var.env_name),var.web_tags)}"
 }
 
 module "alb" {

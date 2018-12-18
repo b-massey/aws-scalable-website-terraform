@@ -28,7 +28,7 @@ data "aws_ami" "linux" {
 
 
 module "vpc" {
-  source                = "../modules/vpc"
+  source                = "git@github.com:b-massey/terraform-modules.git//aws/networking/vpc"
   name                  = "${format("%s-%s",var.project_name,var.env_name)}"
   cidr                  = "${var.vpc_cidr}"
   azs                   = "eu-west-2a,eu-west-2b"
@@ -40,7 +40,7 @@ module "vpc" {
 }
 
 module "sg_alb" {
-  source            = "../modules/sg_alb"
+  source            = "git@github.com:b-massey/terraform-modules.git//aws/networking/security_groups/sg_alb"
   sg_name           = "${format("%s-%s-alb",var.project_name,var.env_name)}"
   vpc_id            = "${module.vpc.vpc_id}"
   source_cidr_block = "0.0.0.0/0"
@@ -48,7 +48,7 @@ module "sg_alb" {
 }
 
 module "sg_site" {
-  source            = "../modules/sg_site"
+  source            = "git@github.com:b-massey/terraform-modules.git//aws/networking/security_groups/sg_site"
   sg_name           = "${format("%s-%s",var.project_name,var.env_name)}"
   vpc_id            = "${module.vpc.vpc_id}"
   alb_sec_group_id  = "${module.sg_alb.security_group_id}"
@@ -57,7 +57,7 @@ module "sg_site" {
 }
 
 module "sg_bastion" {
-  source              = "../modules/sg_bastion"
+  source              = "git@github.com:b-massey/terraform-modules.git//aws/networking/security_groups/sg_bastion"
   sg_name             = "sg_bastion"
   vpc_id              = "${module.vpc.vpc_id}"
   source_cidr_block   = "0.0.0.0/0"
@@ -66,7 +66,7 @@ module "sg_bastion" {
 }
 
 module "bastion_server" {
-  source                      = "../modules/bastion_server"
+  source                      = "git@github.com:b-massey/terraform-modules.git//aws/ec2/bastion_server"
   ami                         = "${data.aws_ami.linux.id}"
   instance_type               = "t2.small"
   key_name                    = "${var.key_pair}"
@@ -78,7 +78,7 @@ module "bastion_server" {
 }
 
 module "alb" {
-  source              = "../modules/alb"
+  source              = "git@github.com:b-massey/terraform-modules.git//aws/ec2/alb"
   name                = "${format("%s-%s",var.project_name,var.env_name)}"
   tags                = "${merge(map("Env",var.env_name),var.web_tags)}"
   subnets             = "${module.vpc.public_subnets}"
@@ -91,7 +91,7 @@ module "alb" {
 }
 
 module "launch_template" {
-  source                = "../modules/launch_template"
+  source                = "git@github.com:b-massey/terraform-modules.git//aws/ec2/launch_template"
   name                  = "${format("%s-%s",var.project_name,var.env_name)}"
   tags                  = "${merge(map("Env",var.env_name),var.web_tags)}"
   ami                   = "${data.aws_ami.linux.id}"
@@ -103,7 +103,7 @@ module "launch_template" {
 }
 
 module "autoscaling_groups" {
-  source              = "../modules/autoscaling_groups"
+  source              = "git@github.com:b-massey/terraform-modules.git//aws/ec2/autoscaling_groups"
   name                = "${format("%s-%s",var.project_name,var.env_name)}"
   min_size            = "1"
   max_size            = "2"
